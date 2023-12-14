@@ -31,7 +31,7 @@ pipeline {
             steps {
                 // Deploy the project, making the folder configurable
                 // sh "cd sample-app && sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &"
-                sh "&& sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &"
+                sh "sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &"
             }
         }
     }
