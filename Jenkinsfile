@@ -18,7 +18,7 @@ pipeline {
             steps {
                 script {
                     // Download and install Terraform
-                    def tfHome = tool 'terraform'
+                    def tfHome = tool 'Terraform'
                     env.PATH = "${tfHome}/bin:${env.PATH}"
                 }
                 // Navigate to the Terraform folder
