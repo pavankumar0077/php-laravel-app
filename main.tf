@@ -41,4 +41,3 @@ resource "aws_security_group" "example_sg" {
 output "public_ip" {
   value = aws_instance.example_instance.public_ip
 }
-
