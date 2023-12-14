@@ -18,7 +18,7 @@ pipeline {
             steps {
                 script {
                     // Download and install Terraform
-                    def tfHome = tool 'Terraform'
+                    def tfHome = tool 'terraform'
                     env.PATH = "${tfHome}/bin:${env.PATH}"
                 }
                 // Navigate to the Terraform folder
@@ -79,25 +79,6 @@ pipeline {
             steps {
                 // SSH into the EC2 instance and run the application
                 sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &'"
-            }
-        }
-    }
-
-    post {
-        always {
-            // Sleep for 10 minutes
-            sleep time: 10, unit: 'MINUTES'
-        }
-
-        success {
-            script {
-                // Navigate to the Terraform folder
-                dir('terraform') {
-                    // Run Terraform destroy command
-                    sh """
-                    terraform destroy -auto-approve
-                    """
-                }
             }
         }
     }
