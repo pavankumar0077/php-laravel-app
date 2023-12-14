@@ -100,10 +100,6 @@ pipeline {
                 }
             }
         }
-
-        failure {
-            // Actions to be performed on build failure
-        }
     }
 }
 
