@@ -70,24 +70,28 @@ pipeline {
             }
         }
 
-        stage('Install Required Packages') {
+        stage('Install Dependencies') {
             steps {
-                // SSH into the EC2 instance and install required packages
                 script {
-                    def commands = """
-                    sudo apt-get -y install software-properties-common apt-transport-https git gnupg sudo nano wget curl zip unzip tcl inetutils-ping net-tools
-                    sudo add-apt-repository ppa:ondrej/php
-                    sudo apt-get install -y php8.2 php8.2-fpm php8.2-bcmath php8.2-curl php8.2-imagick php8.2-intl php-json php8.2-mbstring php8.2-mysql php8.2-xml php8.2-zip
-                    sudo php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-                    sudo php -r "if (hash_file('sha384', 'composer-setup.php') === 'e21205b207c3ff031906575712edab6f13eb0b361f2085f1f1237b7126d785e826a450292b6cfd1d64d92e6563bbde02') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-                    sudo php composer-setup.php
-                    sudo php -r "unlink('composer-setup.php');"
-                    sudo mv composer.phar /usr/local/bin/composer
-                    """
-                    sh "ssh -i ${SSH_KEY} ubuntu@${publicIP} '${commands}'"
+                    def ip = sh(script: "terraform output public_ip", returnStdout: true).trim()
+
+                    sshagent([SSH_KEY]) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no -i $IDENTITY ubuntu@$ip "
+                                sudo apt update &&
+                                sudo apt install -y software-properties-common &&
+                                sudo add-apt-repository ppa:ondrej/php &&
+                                sudo apt install -y php php-common php-mbstring php-xmlrpc php-soap php-gd php-xml php-intl php-mysql php-cli php-zip php-curl &&
+                                curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+                            "
+                        """
+                    }
                 }
             }
         }
+
+        
+
 
         stage('Git Checkout Again') {
             steps {
@@ -109,4 +113,9 @@ pipeline {
         }
     }
 }
+
+
+
+
+
 
