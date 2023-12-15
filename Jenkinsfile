@@ -77,7 +77,7 @@ pipeline {
             }
             steps {
                 // Update & Upgrade non-interactively
-                sh 'sudo apt update && sudo apt upgrade -y'
+                sh 'sudo apt update'
 
                 // OS essential tools
                 sh 'sudo apt-get -y install software-properties-common apt-transport-https git gnupg sudo nano wget curl zip unzip tcl inetutils-ping net-tools'
@@ -120,9 +120,3 @@ pipeline {
         }
     }
 }
-
-
-
-
-
-
