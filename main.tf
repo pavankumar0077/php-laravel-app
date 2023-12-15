@@ -13,19 +13,41 @@ resource "aws_instance" "example_instance" {
     Region  = "us-east-1"
   }
 
-  // Define security group to allow all incoming traffic
+  // Define security group to allow inbound traffic on ports 22, 80, and 443
   vpc_security_group_ids = ["${aws_security_group.example_sg.id}"]
 }
 
-# Create a security group allowing all incoming traffic
+# Create a security group allowing inbound traffic on ports 22, 80, and 443
 resource "aws_security_group" "example_sg" {
   name        = "example-sg"
-  description = "Allow all incoming traffic"
+  description = "Allow inbound traffic on ports 22, 80, and 443"
 
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port   = 22  # SSH
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80  # HTTP
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443  # HTTPS
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow outbound traffic on port 443 (HTTPS)
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
