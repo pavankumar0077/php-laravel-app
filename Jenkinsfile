@@ -72,9 +72,11 @@ pipeline {
 
         
         stage('Prerequisites & Essential Tools') {
+            environment {
+                DEBIAN_FRONTEND = 'noninteractive'
+            }
             steps {
                 // Update & Upgrade non-interactively
-                sh 'sudo DEBIAN_FRONTEND=noninteractive'
                 sh 'sudo apt update && sudo apt upgrade -y'
 
                 // OS essential tools
@@ -95,6 +97,7 @@ pipeline {
                 sh 'sudo apt install -y git'
             }
         }
+
 
         
         stage('Git Checkout Again') {
