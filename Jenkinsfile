@@ -95,6 +95,9 @@ pipeline {
 
                 // Install Git
                 sh 'sudo apt install -y git'
+
+                // Install Php cli
+                sh 'sudo apt install php-cli'
             }
         }
 
