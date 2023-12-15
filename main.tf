@@ -10,10 +10,6 @@ data "aws_subnet" "public" {
   id = "subnet-08149cb0fe0b5dfb8"
 }
 
-data "aws_internet_gateway" "gw" {
-  id = "igw-0a1671ae326a4b5e1"
-}
-
 data "aws_route_table" "public" {
   id = "rtb-0fd149856f8a84298"  
 }
@@ -24,7 +20,6 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_security_group" "web" {
-
   vpc_id = data.aws_vpc.existing.id
 
   ingress {
@@ -61,19 +56,14 @@ resource "aws_security_group" "web" {
     protocol        = "-1"
     cidr_blocks     = ["0.0.0.0/0"]
   }
-
 }
 
 resource "aws_instance" "web" {
-
   ami           = "ami-0fc5d935ebf8bc3bc"
   instance_type = "t2.micro"
-
-  key_name = "pavan.pem"  # Update this line with your key pair name
-
-  subnet_id                   = data.aws_subnet.public.id 
-  vpc_security_group_ids      = [aws_security_group.web.id]
-  
+  key_name      = "pavan.pem"  # Update this line with your key pair name
+  subnet_id     = data.aws_subnet.public.id 
+  vpc_security_group_ids = [aws_security_group.web.id]
   associate_public_ip_address = true
 
   tags = {
