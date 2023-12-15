@@ -13,14 +13,14 @@ resource "aws_instance" "example_instance" {
     Region  = "us-east-1"
   }
 
-  // Define security group to allow incoming traffic on ports 22 and 8000
+  // Define security group to allow incoming traffic on ports 22, 80, and 443
   vpc_security_group_ids = ["${aws_security_group.example_sg.id}"]
 }
 
-# Create a security group allowing incoming traffic on ports 22 and 8000
+# Create a security group allowing incoming traffic on ports 22, 80, and 443
 resource "aws_security_group" "example_sg" {
   name        = "example-sg"
-  description = "Allow incoming traffic on ports 22 and 8000"
+  description = "Allow incoming traffic on ports 22, 80, and 443"
 
   ingress {
     from_port   = 22
@@ -30,8 +30,15 @@ resource "aws_security_group" "example_sg" {
   }
 
   ingress {
-    from_port   = 8000
-    to_port     = 8000
+    from_port   = 80  # HTTP
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443  # HTTPS
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -41,3 +48,4 @@ resource "aws_security_group" "example_sg" {
 output "public_ip" {
   value = aws_instance.example_instance.public_ip
 }
+
