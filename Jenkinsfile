@@ -74,7 +74,7 @@ pipeline {
         stage('Prerequisites & Essential Tools') {
             steps {
                 // Update & Upgrade non-interactively
-                sh 'sudo export DEBIAN_FRONTEND=noninteractive'
+                sh 'sudo DEBIAN_FRONTEND=noninteractive'
                 sh 'sudo apt update && sudo apt upgrade -y'
 
                 // OS essential tools
