@@ -108,13 +108,13 @@ pipeline {
     //         }
     //     }
 
-    //     stage('Run Application') {
-    //         steps {
-    //             // SSH into the EC2 instance and run the application
-    //             sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &'"
-    //         }
-    //     }
-    // }
+        // stage('Run Application') {
+        //     steps {
+        //         // SSH into the EC2 instance and run the application
+        //         sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &'"
+        //     }
+        // }
+    }
 }
 
 
