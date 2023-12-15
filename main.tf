@@ -14,7 +14,7 @@ resource "aws_instance" "example_instance" {
   }
 
   // Define security group to allow inbound traffic on ports 22, 80, and 443
-  vpc_security_group_ids = ["${aws_security_group.example_sg.id}"]
+  vpc_security_group_ids = ["${aws_security_group.example_sg1.id}"]
 }
 
 # Create a security group allowing inbound traffic on ports 22, 80, and 443
