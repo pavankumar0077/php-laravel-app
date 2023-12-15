@@ -18,8 +18,8 @@ resource "aws_instance" "example_instance" {
 }
 
 # Create a security group allowing inbound traffic on ports 22, 80, and 443
-resource "aws_security_group" "example_sg" {
-  name        = "example-sg"
+resource "aws_security_group" "example_sg1" {
+  name        = "example-sg1"
   description = "Allow inbound traffic on ports 22, 80, and 443"
 
   ingress {
