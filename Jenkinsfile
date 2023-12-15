@@ -102,21 +102,22 @@ pipeline {
         
         stage('Git Checkout Again') {
             steps {
-                // SSH into the EC2 instance and checkout the code using git
-                script {
-                    def commands = """
-                    git clone https://github.com/pavankumar0077/php-laravel-app.git
-                    """
-                    sh "ssh -i ${SSH_KEY} ubuntu@${publicIP} '${commands}'"
-                }
+                // Checkout the code using git step
+                git branch: 'main', url: 'https://github.com/pavankumar0077/php-laravel-app.git'
             }
         }
 
         stage('Run Application') {
             steps {
-                // SSH into the EC2 instance and run the application
-                sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &'"
+                // Deploy the project, making the folder configurable
+                sh "sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &"
             }
         }
     }
 }
+
+
+
+
+
+
