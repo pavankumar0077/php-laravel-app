@@ -10,6 +10,7 @@ pipeline {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         SSH_KEY               = credentials('SSH_KEY')  
+        PHP_PATH              = '/usr/bin/php'  // Added PHP_PATH
     }
 
     stages {
@@ -118,14 +119,11 @@ pipeline {
                     // Extract the public IP address from Terraform output
                     def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
 
-                    // Provide the full path to PHP
-                    def phpPath = '/usr/bin/php'
-
                     // SSH into the newly created EC2 instance and run the application
-                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup ${phpPath} artisan serve --host=0.0.0.0 --port=8000 &'"
+                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup ${PHP_PATH} artisan serve --host=0.0.0.0 --port=8000 &'"
                 }
             }
         }
     }
 }
-~
+
