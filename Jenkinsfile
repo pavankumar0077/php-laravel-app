@@ -9,7 +9,7 @@ pipeline {
     environment {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-        SSH_KEY               = credentials('SSH_KEY')  // Replace 'pavan.pem' with the actual credential ID for your PEM key
+        SSH_KEY               = credentials('SSH_KEY')  
     }
 
     stages {
@@ -75,9 +75,9 @@ pipeline {
                 script {
                     def ip = sh(script: "terraform output public_ip", returnStdout: true).trim()
 
-                    sshagent([SSH_KEY]) {
+                    sshagent(['SSH_KEY']) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no -i $IDENTITY ubuntu@$ip "
+                            ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ubuntu@\$ip "
                                 sudo apt update &&
                                 sudo apt install -y software-properties-common &&
                                 sudo add-apt-repository ppa:ondrej/php &&
@@ -89,6 +89,7 @@ pipeline {
                 }
             }
         }
+
 
         
 
