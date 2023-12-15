@@ -2,19 +2,66 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# Existing VPC details
-variable "existing_vpc_id" {
-  description = "ID of the existing VPC"
-  default     = "vpc-0c144991f30bbb9ab"
+# Create a new VPC
+resource "aws_vpc" "example_vpc" {
+  cidr_block = "10.0.0.0/16"
+  enable_dns_support = true
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "example-vpc"
+  }
 }
 
-# Existing key pair name
-variable "key_pair_name" {
-  description = "Name of the existing key pair"
-  default     = "your-key-pair-name"  # Replace with your actual key pair name
+# Create a public subnet in the new VPC
+resource "aws_subnet" "public_subnet" {
+  vpc_id                  = aws_vpc.example_vpc.id
+  cidr_block              = "10.0.1.0/24"  # Choose an appropriate CIDR block for your public subnet
+  availability_zone       = "us-east-1a"    # Choose your desired availability zone
+
+  map_public_ip_on_launch = true  # This will automatically assign public IPs to instances in this subnet
+
+  tags = {
+    Name = "public-subnet"
+  }
 }
 
-# Create a new security group
+# Create an Internet Gateway
+resource "aws_internet_gateway" "example_igw" {
+  vpc_id = aws_vpc.example_vpc.id
+
+  tags = {
+    Name = "example-igw"
+  }
+}
+
+# Attach the Internet Gateway to the VPC
+resource "aws_vpc_attachment" "example_igw_attachment" {
+  vpc_id             = aws_vpc.example_vpc.id
+  internet_gateway_id = aws_internet_gateway.example_igw.id
+}
+
+# Create a route table for the public subnet
+resource "aws_route_table" "public_route_table" {
+  vpc_id = aws_vpc.example_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.example_igw.id
+  }
+
+  tags = {
+    Name = "public-route-table"
+  }
+}
+
+# Associate the public subnet with the public route table
+resource "aws_route_table_association" "public_subnet_association" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_route_table.id
+}
+
+# Create a security group allowing inbound traffic on ports 22, 80, 443, and 8000
 resource "aws_security_group" "example_sg" {
   name        = "example-sg"
   description = "Allow inbound traffic on ports 22, 80, 443, and 8000"
@@ -46,51 +93,21 @@ resource "aws_security_group" "example_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  vpc_id = var.existing_vpc_id
 }
 
-# Create a public subnet in the existing VPC
-resource "aws_subnet" "public_subnet" {
-  vpc_id                  = var.existing_vpc_id
-  cidr_block              = "10.0.1.0/24"  # Choose an appropriate CIDR block for your public subnet
-  availability_zone       = "us-east-1a"    # Choose your desired availability zone
-
-  map_public_ip_on_launch = true  # This will automatically assign public IPs to instances in this subnet
-
-  tags = {
-    Name = "public-subnet"
-  }
-}
-
-# Create an Internet Gateway
-resource "aws_internet_gateway" "example_igw" {
-  vpc_id = var.existing_vpc_id
-
-  tags = {
-    Name = "example-igw"
-  }
-}
-
-# Associate the public subnet with the main route table of the existing VPC
-resource "aws_route_table_association" "public_subnet_association" {
-  subnet_id      = aws_subnet.public_subnet.id
-  route_table_id = aws_vpc.main_route_table_association[0].id
-}
-
+# Create an EC2 instance in the public subnet
 resource "aws_instance" "example_instance" {
   ami           = "ami-0fc5d935ebf8bc3bc"  # Specify the AMI ID for your desired image
   instance_type = "t2.micro"
   
-  key_name      = var.key_pair_name  # Specify the name of your key pair
+  key_name      = "pavan.pem"
   subnet_id     = aws_subnet.public_subnet.id
+  security_group_ids = [aws_security_group.example_sg.id]
 
   tags = {
     Name    = "example-instance"
     Region  = "us-east-1"
   }
-
-  vpc_security_group_ids = [aws_security_group.example_sg.id]
 }
 
 # Output the public IP address of the created instance
