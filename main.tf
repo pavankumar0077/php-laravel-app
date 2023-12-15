@@ -33,15 +33,19 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 
-# Use existing Internet Gateway
+# Create an Internet Gateway
 resource "aws_internet_gateway" "example_igw" {
-  id    = var.existing_igw_id
+  vpc_id = var.existing_vpc_id
+
+  tags = {
+    Name = "example-igw"
+  }
 }
 
-# Attach the existing Internet Gateway to the VPC
+# Attach the Internet Gateway to the VPC
 resource "aws_vpc_attachment" "example_igw_attachment" {
   vpc_id             = var.existing_vpc_id
-  internet_gateway_id = var.existing_igw_id
+  internet_gateway_id = aws_internet_gateway.example_igw.id
 }
 
 # Create a route table for the public subnet
@@ -50,7 +54,7 @@ resource "aws_route_table" "public_route_table" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = var.existing_igw_id
+    gateway_id = aws_internet_gateway.example_igw.id
   }
 
   tags = {
