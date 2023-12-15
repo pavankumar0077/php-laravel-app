@@ -73,8 +73,8 @@ pipeline {
         
         stage('Prerequisites & Essential Tools') {
             steps {
-                // Update & Upgrade
-                sh 'sudo apt update && sudo apt upgrade -y'
+                // Update & Upgrade non-interactively
+                sh 'sudo DEBIAN_FRONTEND=noninteractive apt update && sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y'
 
                 // OS essential tools
                 sh 'sudo apt-get -y install software-properties-common apt-transport-https git gnupg sudo nano wget curl zip unzip tcl inetutils-ping net-tools'
@@ -91,15 +91,11 @@ pipeline {
                 sh 'sudo mv composer.phar /usr/local/bin/composer'
 
                 // Install Git
-                sh 'sudo apt install git'
+                sh 'sudo apt install -y git'
             }
         }
-        
-
 
         
-
-
         stage('Git Checkout Again') {
             steps {
                 // SSH into the EC2 instance and checkout the code using git
