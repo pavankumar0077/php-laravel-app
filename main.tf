@@ -8,6 +8,12 @@ variable "existing_vpc_id" {
   default     = "vpc-0c144991f30bbb9ab"
 }
 
+# Existing Internet Gateway details
+variable "existing_igw_id" {
+  description = "ID of the existing Internet Gateway"
+  default     = "igw-0a1671ae326a4b5e1"
+}
+
 # Existing key pair name
 variable "key_pair_name" {
   description = "Name of the existing key pair"
@@ -27,19 +33,15 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 
-# Create an Internet Gateway
+# Use existing Internet Gateway
 resource "aws_internet_gateway" "example_igw" {
-  vpc_id = var.existing_vpc_id
-
-  tags = {
-    Name = "example-igw"
-  }
+  id    = var.existing_igw_id
 }
 
-# Attach the Internet Gateway to the VPC
-resource "aws_internet_gateway_attachment" "example_igw_attachment" {
+# Attach the existing Internet Gateway to the VPC
+resource "aws_vpc_attachment" "example_igw_attachment" {
   vpc_id             = var.existing_vpc_id
-  internet_gateway_id = aws_internet_gateway.example_igw.id
+  internet_gateway_id = var.existing_igw_id
 }
 
 # Create a route table for the public subnet
@@ -48,7 +50,7 @@ resource "aws_route_table" "public_route_table" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.example_igw.id
+    gateway_id = var.existing_igw_id
   }
 
   tags = {
@@ -63,8 +65,8 @@ resource "aws_route_table_association" "public_subnet_association" {
 }
 
 # Create a security group allowing inbound traffic on ports 22, 80, 443, and 8000
-resource "aws_security_group" "example_sg1" {
-  name        = "example-sg1"
+resource "aws_security_group" "example_sg" {
+  name        = "example-sg"
   description = "Allow inbound traffic on ports 22, 80, 443, and 8000"
 
   ingress {
@@ -103,7 +105,7 @@ resource "aws_instance" "example_instance" {
   
   key_name      = var.key_pair_name
   subnet_id     = aws_subnet.public_subnet.id
-  vpc_security_group_ids = [aws_security_group.example_sg1.id]
+  vpc_security_group_ids = [aws_security_group.example_sg.id]
 
   tags = {
     Name    = "example-instance"
