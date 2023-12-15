@@ -37,7 +37,7 @@ resource "aws_internet_gateway" "example_igw" {
 }
 
 # Attach the Internet Gateway to the VPC
-resource "aws_vpc_attachment" "example_igw_attachment" {
+resource "aws_internet_gateway_attachment" "example_igw_attachment" {
   vpc_id             = var.existing_vpc_id
   internet_gateway_id = aws_internet_gateway.example_igw.id
 }
@@ -98,13 +98,12 @@ resource "aws_security_group" "example_sg1" {
 
 # Create an EC2 instance in the public subnet
 resource "aws_instance" "example_instance" {
-  ami           = "ami-0fc5d935ebf8bc3bc" 
+  ami           = "ami-0fc5d935ebf8bc3bc"  # Specify the AMI ID for your desired image
   instance_type = "t2.micro"
   
   key_name      = var.key_pair_name
   subnet_id     = aws_subnet.public_subnet.id
-
-  vpc_security_group_ids = [aws_security_group.example_sg1.id] 
+  vpc_security_group_ids = [aws_security_group.example_sg1.id]
 
   tags = {
     Name    = "example-instance"
