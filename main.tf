@@ -2,70 +2,65 @@ provider "aws" {
   region = "us-east-1"
 }
 
-data "aws_vpc" "existing" {
-  id = "vpc-0c144991f30bbb9ab" 
+resource "aws_instance" "example_instance" {
+  ami           = "ami-0fc5d935ebf8bc3bc"  # Specify the AMI ID for your desired image
+  instance_type = "t2.micro"
+  
+  key_name = "pavan"  # Specify the name of your key pair
+
+  tags = {
+    Name    = "example-instance"
+    Region  = "us-east-1"
+  }
+
+  // Define security group to allow inbound traffic on ports 22, 80, 443, and 8000
+  vpc_security_group_ids = ["${aws_security_group.example_sg1.id}"]
 }
 
-data "aws_subnet" "public" {
-  id = "subnet-08149cb0fe0b5dfb8"
-}
-
-resource "aws_route_table_association" "public" {
-  subnet_id      = data.aws_subnet.public.id
-  route_table_id = data.aws_subnet.public.route_table_association_id
-}
-
-resource "aws_security_group" "web" {
-  name        = "web-sg"
-  description = "Security group for web server"
-  vpc_id      = data.aws_vpc.existing.id
+# Create a security group allowing inbound traffic on ports 22, 80, 443, and 8000
+resource "aws_security_group" "example_sg1" {
+  name        = "example-sg1"
+  description = "Allow inbound traffic on ports 22, 80, 443, and 8000"
 
   ingress {
-    from_port   = 22
+    from_port   = 22  # SSH
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port   = 80
+    from_port   = 80  # HTTP
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port   = 443
+    from_port   = 443  # HTTPS
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port   = 8000
+    from_port   = 8000  # Custom application port
     to_port     = 8000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Allow outbound traffic on port 443 (HTTPS)
   egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-resource "aws_instance" "web" {
-  ami                         = "ami-0fc5d935ebf8bc3bc"
-  instance_type               = "t2.micro"
-  key_name                    = "pavan.pem"  
-  subnet_id                   = data.aws_subnet.public.id 
-  vpc_security_group_ids      = [aws_security_group.web.id]
-  associate_public_ip_address = true
-
-  tags = {
-    Name = "Web Server"
-  }
+# Output the public IP address of the created instance
+output "public_ip" {
+  value = aws_instance.example_instance.public_ip
 }
 
