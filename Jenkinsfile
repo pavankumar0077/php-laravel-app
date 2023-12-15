@@ -102,15 +102,25 @@ pipeline {
         
         stage('Git Checkout Again') {
             steps {
-                // Checkout the code using git step
-                git branch: 'main', url: 'https://github.com/pavankumar0077/php-laravel-app.git'
+                script {
+                    // Extract the public IP address from Terraform output
+                    def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
+
+                    // SSH into the newly created EC2 instance and checkout the code using git
+                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'git clone https://github.com/pavankumar0077/php-laravel-app.git'"
+                }
             }
         }
 
         stage('Run Application') {
             steps {
-                // Deploy the project, making the folder configurable
-                sh "sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &"
+                script {
+                    // Extract the public IP address from Terraform output
+                    def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
+
+                    // SSH into the newly created EC2 instance and run the application
+                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &'"
+                }
             }
         }
     }
