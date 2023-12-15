@@ -2,25 +2,17 @@ provider "aws" {
   region = "us-east-1"
 }
 
-data "aws_vpc" "existing" {
-  id = "vpc-0c144991f30bbb9ab" 
-}
-
 data "aws_subnet" "public" {
   id = "subnet-08149cb0fe0b5dfb8"
 }
 
-data "aws_route_table" "public" {
-  id = "rtb-0fd149856f8a84298"  
-}
-
 resource "aws_route_table_association" "public" {
   subnet_id      = data.aws_subnet.public.id
-  route_table_id = data.aws_route_table.public.id
+  route_table_id = "rtb-0fd149856f8a84298"
 }
 
 resource "aws_security_group" "web" {
-  vpc_id = data.aws_vpc.existing.id
+  vpc_id = "vpc-0c144991f30bbb9ab"
 
   ingress {
     from_port   = 22
@@ -61,8 +53,8 @@ resource "aws_security_group" "web" {
 resource "aws_instance" "web" {
   ami           = "ami-0fc5d935ebf8bc3bc"
   instance_type = "t2.micro"
-  key_name      = "pavan.pem"  # Update this line with your key pair name
-  subnet_id     = data.aws_subnet.public.id 
+  key_name      = "pavan.pem"
+  subnet_id     = "subnet-08149cb0fe0b5dfb8" 
   vpc_security_group_ids = [aws_security_group.web.id]
   associate_public_ip_address = true
 
