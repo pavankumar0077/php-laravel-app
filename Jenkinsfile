@@ -52,6 +52,12 @@ pipeline {
             }
         }
 
+        stage('Sleep for 2 minutes') {
+            steps {
+                sleep time: 120, unit: 'SECONDS'
+            }
+        }
+
         stage('SSH into EC2 Instance') {
             steps {
                 script {
