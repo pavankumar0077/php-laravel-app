@@ -12,7 +12,7 @@ data "aws_subnet" "public" {
 
 resource "aws_route_table_association" "public" {
   subnet_id      = data.aws_subnet.public.id
-  route_table_id = data.aws_subnet.public.route_table_id  # Use the route table associated with the subnet
+  route_table_id = data.aws_subnet.public.route_table_association_id
 }
 
 resource "aws_security_group" "web" {
