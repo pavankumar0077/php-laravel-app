@@ -10,7 +10,6 @@ pipeline {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         SSH_KEY               = credentials('SSH_KEY')  
-        PHP_PATH              = '/usr/bin/php'  // Added PHP_PATH
     }
 
     stages {
