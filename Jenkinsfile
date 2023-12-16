@@ -113,7 +113,7 @@ pipeline {
                     // Extract the public IP address from Terraform output
                     def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
 
-                    // SSH into the newly created EC2 instance and start the application
+                    // SSH into the newly created EC2 instance and start the php application
                     sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && composer install && cp .env.example .env && php artisan key:generate && php artisan serve --host=0.0.0.0 --port=80'"
                 }
             }
