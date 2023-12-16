@@ -113,7 +113,7 @@ pipeline {
             }
         }
 
-         stage('Sleep for 1 minute') {
+         stage('Sleep for 45 Seconds') {
             steps {
                 sleep time: 45, unit: 'SECONDS'
             }
