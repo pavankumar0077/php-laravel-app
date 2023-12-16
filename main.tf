@@ -5,7 +5,7 @@ provider "aws" {
 # Create a new VPC
 resource "aws_vpc" "example_vpc" {
   cidr_block = "10.0.0.0/16"
-  enable_dns_support = true
+  enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
@@ -68,11 +68,11 @@ resource "aws_security_group" "example_sg1" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Allow outbound traffic on port 443 (HTTPS)
+  # Allow outbound traffic on all ports
   egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
@@ -115,4 +115,3 @@ resource "aws_instance" "example_instance" {
 output "public_ip" {
   value = aws_instance.example_instance.public_ip
 }
-
