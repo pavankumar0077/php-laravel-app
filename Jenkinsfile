@@ -95,13 +95,7 @@ pipeline {
 
                 // Install Git
                 sh 'sudo apt install -y git'
-
-                 // Install Php cli
-                sh 'sudo apt install php-cli'
-                sh 'sudo apt install -y php8.2-cli'
-
-                // php-xml
-                sh 'sudo apt-get install php-xml'
+                
             }
         }
 
@@ -120,6 +114,16 @@ pipeline {
         stage('Sleep for 45 seconds') {
             steps {
                 sleep time: 45, unit: 'SECONDS'
+            }
+        }
+
+        stage('Php Cli installation') {
+            steps {
+                 // Install Php cli
+                sh 'sudo apt install -y php8.2-cli'
+
+                // php-xml
+                sh 'sudo apt-get install php-xml'        
             }
         }
 
