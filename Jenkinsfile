@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     parameters {
-    booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
-    choice(name: 'action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
+        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
+        choice(name: 'action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
     }
 
     environment {
@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/pavankumar0077/php-laravel-app.git'
+                git branch: 'main', url: 'https://github.com/pavankumar0077/php-laravel-app.git'
             }
         }
 
@@ -25,15 +25,30 @@ pipeline {
             }
         }
 
-        stage('Terraform Plan') {
+        stage('Plan') {
             steps {
-                sh 'terraform plan'
+                sh 'terraform plan -out tfplan'
+                sh 'terraform show -no-color tfplan > tfplan.txt'
             }
         }
 
-        stage('Terraform Apply') {
+        stage('Apply / Destroy') {
             steps {
-                sh 'terraform apply -auto-approve'
+                script {
+                    if (params.action == 'apply') {
+                        if (!params.autoApprove) {
+                            def plan = readFile 'tfplan.txt'
+                            input message: "Do you want to apply the plan?",
+                            parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
+                        }
+
+                        sh 'terraform apply -input=false tfplan'
+                    } else if (params.action == 'destroy') {
+                        sh 'terraform destroy --auto-approve'
+                    } else {
+                        error "Invalid action selected. Please choose either 'apply' or 'destroy'."
+                    }
+                }
             }
         }
 
@@ -43,18 +58,19 @@ pipeline {
             }
         }
 
-        stage('SSH into EC2 instance') {
+        stage('SSH into EC2 Instance') {
             steps {
                 script {
                     // Extract the public IP address from Terraform output
                     def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
 
                     // SSH into the newly created EC2 instance
-                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP}"
+                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'echo SSH into EC2 successful'"
                 }
             }
         }
 
+        
         stage('Prerequisites & Essential Tools') {
             environment {
                 DEBIAN_FRONTEND = 'noninteractive'
@@ -80,14 +96,14 @@ pipeline {
                 // Install Git
                 sh 'sudo apt install -y git'
 
-                // Install Php cli
+                 // Install Php cli
+                sh 'sudo apt install php-cli'
                 sh 'sudo apt install -y php8.2-cli'
 
                 // php-xml
                 sh 'sudo apt-get install php-xml'
             }
         }
-
 
         stage('Git Checkout Again') {
             steps {
@@ -113,8 +129,8 @@ pipeline {
                     // Extract the public IP address from Terraform output
                     def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
 
-                    // SSH into the newly created EC2 instance and start the php application
-                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && composer install && cp .env.example .env && php artisan key:generate && php artisan serve --host=0.0.0.0 --port=80'"
+                    // SSH into the newly created EC2 instance and run the application
+                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &'"
                 }
             }
         }
