@@ -2,20 +2,21 @@ pipeline {
     agent any
 
     parameters {
-        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
-        choice(name: 'action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
+    booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
+    choice(name: 'action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
     }
 
     environment {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         SSH_KEY               = credentials('SSH_KEY')  
+        PHP_PATH              = '/usr/bin/php'  // Added PHP_PATH
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/pavankumar0077/php-laravel-app.git'
+                git 'https://github.com/pavankumar0077/php-laravel-app.git'
             }
         }
 
@@ -25,30 +26,15 @@ pipeline {
             }
         }
 
-        stage('Plan') {
+        stage('Terraform Plan') {
             steps {
-                sh 'terraform plan -out tfplan'
-                sh 'terraform show -no-color tfplan > tfplan.txt'
+                sh 'terraform plan'
             }
         }
 
-        stage('Apply / Destroy') {
+        stage('Terraform Apply') {
             steps {
-                script {
-                    if (params.action == 'apply') {
-                        if (!params.autoApprove) {
-                            def plan = readFile 'tfplan.txt'
-                            input message: "Do you want to apply the plan?",
-                            parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
-                        }
-
-                        sh 'terraform apply -input=false tfplan'
-                    } else if (params.action == 'destroy') {
-                        sh 'terraform destroy --auto-approve'
-                    } else {
-                        error "Invalid action selected. Please choose either 'apply' or 'destroy'."
-                    }
-                }
+                sh 'terraform apply -auto-approve'
             }
         }
 
@@ -58,26 +44,25 @@ pipeline {
             }
         }
 
-        stage('SSH into EC2 Instance') {
+        stage('SSH into EC2 instance') {
             steps {
                 script {
                     // Extract the public IP address from Terraform output
                     def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
 
                     // SSH into the newly created EC2 instance
-                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'echo SSH into EC2 successful'"
+                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP}"
                 }
             }
         }
 
-        
         stage('Prerequisites & Essential Tools') {
             environment {
                 DEBIAN_FRONTEND = 'noninteractive'
             }
             steps {
                 // Update & Upgrade non-interactively
-                sh 'sudo apt update'
+                sh 'sudo apt update && sudo apt upgrade -y'
 
                 // OS essential tools
                 sh 'sudo apt-get -y install software-properties-common apt-transport-https git gnupg sudo nano wget curl zip unzip tcl inetutils-ping net-tools'
@@ -97,12 +82,14 @@ pipeline {
                 sh 'sudo apt install -y git'
 
                 // Install Php cli
-                sh 'sudo apt install php-cli'
+                sh 'sudo apt install -y php8.2-cli'
+
+                // php-xml
+                sh 'sudo apt-get install php-xml'
             }
         }
 
 
-        
         stage('Git Checkout Again') {
             steps {
                 script {
@@ -115,14 +102,20 @@ pipeline {
             }
         }
 
+        stage('Sleep for 45 seconds') {
+            steps {
+                sleep time: 45, unit: 'SECONDS'
+            }
+        }
+
         stage('Run Application') {
             steps {
                 script {
                     // Extract the public IP address from Terraform output
                     def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
 
-                    // SSH into the newly created EC2 instance and run the application
-                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup php artisan serve --host=0.0.0.0 --port=8000 &'"
+                    // SSH into the newly created EC2 instance and start the application
+                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && composer install && cp .env.example .env && php artisan key:generate && php artisan serve --host=0.0.0.0 --port=80'"
                 }
             }
         }
