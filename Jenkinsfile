@@ -55,17 +55,17 @@ pipeline {
 
         stage('Sleep for 1 minute') {
             steps {
-                sleep time: 60, unit: 'SECONDS'
-            }
-        }
+                sleep time: 60, unit: 'SECONDS'            }}
 
-        stage('SSH into EC2 Instance') {
+        S
+
+        stage('SH into EC2 Instance') {
             steps {
                 script {
                     // Extract the public IP address from Terraform output
                     def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
 
-                    // SSH into the newly created EC2 instance
+                   // SSH int the newly crea oted EC2 instance
                     sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'echo SSH into EC2 successful'"
                 }
             }
@@ -80,7 +80,7 @@ pipeline {
                 sh 'sudo apt update'
 
                 // OS essential tools
-                sh 'sudo apt-get -y install software-properties-common apt-transport-https git gnupg sudo nano wget curl zip unzip tcl inetutils-ping net-tools'
+                sh 'sudo apt-get-y install software-properties-common apt-tr ansport-https git gnupg sudo nano wget curl zip unzip tcl inetutils-ping net-tools'
 
                 // PHP & its required extensions
                 sh 'sudo add-apt-repository ppa:ondrej/php'
@@ -88,7 +88,7 @@ pipeline {
 
                 // Composer installation to build and run the project
                 sh '''sudo php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"'''
-                sh '''sudo php -r "if (hash_file('sha384', 'composer-setup.php') === 'e21205b207c3ff031906575712edab6f13eb0b361f2085f1f1237b7126d785e826a450292b6cfd1d64d92e6563bbde02') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"'''
+                sh '''sudo php -r "if (hash_file('sha384','composer-setup.php')==='e21205b207c3ff03190   6575712edab6f13eb0b361f2085f1f1237b7126d785e826a450292b6cfd1d64d92e6563bbde02') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"'''
                 sh 'sudo php composer-setup.php'
                 sh '''sudo php -r "unlink('composer-setup.php');"'''
                 sh 'sudo mv composer.phar /usr/local/bin/composer'
@@ -120,7 +120,7 @@ pipeline {
                     def publicIP = sh(script: 'terraform output -json public_ip', returnStdout: true).trim()
 
                     // SSH into the newly created EC2 instance and run the application
-                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo nohup ${PHP_PATH} artisan serve --host=0.0.0.0 --port=8000 &'"
+                    sh "ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${publicIP} 'cd php-laravel-app && sudo artisan serve --host=0.0.0.0 --port=8000 &'"
                 }
             }
         }
